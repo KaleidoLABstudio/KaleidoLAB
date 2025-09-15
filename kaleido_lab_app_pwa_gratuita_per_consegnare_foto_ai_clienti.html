@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KaleidoLAB | Gallerie Clienti</title>
+  <!--
+  ✦✦✦ ISTRUZIONI RAPIDE ✦✦✦
+  1) Sostituisci i dati nel blocco CONFIG più sotto (clienti, pin, link dei file). 
+  2) Carica QUESTO singolo file su GitHub Pages / Netlify / Vercel (gratuito).
+  3) Genera un QR per ogni galleria (usa l'icona QR in alto a destra dalla pagina della galleria).
+  4) Opzionale: metti i file su Google Drive e incolla i link “Chiunque con il link può visualizzare”.
+
+  Sicurezza: il PIN è una protezione leggera (client‑side). Per lavori sensibili usa cartelle Drive con link riservati o protezione a invito.
+
+  Branding: cambia colori, logo (SVG inline), testi qui sotto.
+  -->
+  <style>
+    :root{
+      --bg:#0b0b0c; --card:#141417; --muted:#9aa0a6; --pri:#e1e1e6; --acc:#6ee7ff; --brand:#00d4ff;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--pri);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:980px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;gap:12px}
+    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#00d4ff);display:grid;place-items:center}
+    .logo svg{width:26px;height:26px}
+    .title{font-weight:700;letter-spacing:.3px}
+    .sub{color:var(--muted);font-size:.95rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:18px}
+    .card{background:var(--card);border:1px solid #222;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+    .thumb{aspect-ratio:4/3;background:#0f1013 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="%230f1013"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23555" font-family="monospace" font-size="20">Anteprima</text></svg>') center/cover no-repeat}
+    .card .ctr{padding:14px;display:flex;flex-direction:column;gap:6px}
+    .badge{font-size:.75rem;color:#cbd5e1}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:1px solid #2a2a2f;border-radius:12px;background:#18181b;cursor:pointer}
+    .btn:hover{border-color:#3a3a40}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .search{margin:18px 0 6px;display:flex;gap:8px}
+    .search input{flex:1;background:#121216;border:1px solid #23232a;border-radius:12px;color:#fff;padding:12px}
+    .pill{padding:6px 10px;background:#121216;border:1px solid #222;border-radius:999px;color:#cbd5e1;font-size:.8rem}
+    .footer{margin:24px 0;color:#838b95;font-size:.9rem}
+    .bar{display:flex;gap:8px;align-items:center;margin-left:auto}
+    .icon{width:20px;height:20px}
+    .hidden{display:none}
+
+    /* Galleria */
+    .gallery{margin-top:18px}
+    .gallery .head{display:flex;align-items:center;gap:10px}
+    .pinlock{margin-top:12px;display:flex;gap:8px}
+    .pinlock input{width:160px;background:#111;border:1px solid #222;border-radius:10px;color:#fff;padding:10px;letter-spacing:4px;text-align:center}
+    .media{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}
+    .media a{display:block;border:1px solid #222;border-radius:14px;overflow:hidden}
+    .media img, .media video{width:100%;height:auto;display:block}
+    .tools{display:flex;gap:8px;margin-top:8px}
+    .notice{margin:10px 0;color:#95a0ab}
+    .installBadge{border:1px dashed #2a2; padding:6px 10px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="4"/>
+          <circle cx="12" cy="12" r="4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="title">KaleidoLAB — Gallerie Clienti</div>
+        <div class="sub">App installabile (PWA) per scaricare le foto dei tuoi clienti — 100% gratuita</div>
+      </div>
+      <div class="bar">
+        <button class="btn" id="installBtn" title="Installa l'app" disabled>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M19 21H5"/></svg>
+          Installa
+        </button>
+        <a class="btn" href="#" id="helpBtn" title="Guida rapida">Guida</a>
+      </div>
+    </header>
+
+    <div class="search">
+      <input id="q" placeholder="Cerca cliente o evento…" />
+      <span class="pill" id="count">0 gallerie</span>
+    </div>
+
+    <div id="list" class="grid"></div>
+
+    <section id="viewer" class="gallery hidden"></section>
+
+    <div class="footer">© KaleidoLAB — App gratuita. Suggerimento: genera un QR per ogni cliente e stampalo sul contratto o sul biglietto da visita.</div>
+  </div>
+
+<script>
+/********************** CONFIG ************************
+ * Modifica questo oggetto per aggiungere/gestire gallerie.
+ * - id: slug della galleria (finirà nell'URL #/g/{id})
+ * - title: nome cliente o evento
+ * - cover: immagine di copertina (può essere un link diretto o di Google Drive)
+ * - pin: codice a 4-8 cifre (protezione leggera)
+ * - files: elenco di media {type:'image'|'video', url:'...', name:'...'}
+ * Suggerimento Drive: apri il file > Condividi > Chiunque con il link > Copia link.
+ ******************************************************/
+const GALLERIES = [
+  {
+    id: 'matrimonio_besalu_2024',
+    title: 'Matrimonio — Besalú 2024',
+    cover: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1200',
+    pin: '2580',
+    files: [
+      {type:'image', url:'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=2000', name:'GM_001.jpg'},
+      {type:'image', url:'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=2000', name:'GM_002.jpg'},
+      {type:'image', url:'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=2000', name:'GM_003.jpg'}
+    ]
+  },
+  {
+    id: 'ritratto_gael',
+    title: 'Ritratto — Gael (selezione)',
+    cover: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1200',
+    pin: '0412',
+    files: [
+      {type:'image', url:'https://images.unsplash.com/photo-1520975922322-54e0a4256fd4?w=2000', name:'Gael_01.jpg'},
+      {type:'image', url:'https://images.unsplash.com/photo-1512427691650-2ede5fda9637?w=2000', name:'Gael_02.jpg'}
+    ]
+  }
+];
+
+/************** PWA: manifest + service worker *************/
+(async function setupPWA(){
+  const manifest = {
+    name: 'KaleidoLAB — Gallerie Clienti',
+    short_name: 'KaleidoLAB',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#0b0b0c',
+    theme_color: '#00d4ff',
+    icons: [
+      { src: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" rx="56" fill="%2300d4ff"/><circle cx="128" cy="128" r="54" fill="%23000"/></svg>', sizes: '256x256', type: 'image/svg+xml' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.head.appendChild(link);
+
+  const swCode = `self.addEventListener('install', e=>{self.skipWaiting();e.waitUntil(caches.open('klb-v1').then(c=>c.addAll(['./'])))});
+  self.addEventListener('activate', e=>self.clients.claim());
+  self.addEventListener('fetch', e=>{e.respondWith((async()=>{try{const r=await fetch(e.request);const c=await caches.open('klb-v1');c.put(e.request,r.clone());return r}catch(err){return caches.match(e.request)}})())});`;
+  const swBlob = new Blob([swCode], {type:'text/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  if('serviceWorker' in navigator){
+    try{await navigator.serviceWorker.register(swUrl);}catch(err){console.warn('SW fail',err)}
+  }
+})();
+
+/***************** UI LOGICA *********************/
+const $ = s=>document.querySelector(s);
+const $$ = s=>Array.from(document.querySelectorAll(s));
+const listEl = $('#list');
+const viewer = $('#viewer');
+const search = $('#q');
+const count = $('#count');
+const helpBtn = $('#helpBtn');
+
+function renderList(filter=''){
+  const q = filter.trim().toLowerCase();
+  const items = GALLERIES.filter(g => g.title.toLowerCase().includes(q) || g.id.toLowerCase().includes(q));
+  count.textContent = items.length + (items.length===1?' galleria':' gallerie');
+  listEl.innerHTML = items.map(g=>`
+    <article class="card">
+      <a href="#/g/${g.id}"><div class="thumb" style="background-image:url('${g.cover}')"></div></a>
+      <div class="ctr">
+        <div class="row">
+          <strong>${g.title}</strong>
+          <span class="badge">PIN</span>
+        </div>
+        <a class="btn" href="#/g/${g.id}" aria-label="Apri galleria">Apri galleria</a>
+      </div>
+    </article>
+  `).join('');
+}
+
+function copyToClipboard(t){navigator.clipboard?.writeText(t)}
+
+function renderGallery(id){
+  const g = GALLERIES.find(x=>x.id===id);
+  if(!g){location.hash='';return}
+  const stored = sessionStorage.getItem('pin:'+id) || '';
+  const unlocked = stored===g.pin;
+  viewer.classList.remove('hidden');
+  listEl.classList.add('hidden');
+  $('#q').parentElement.classList.add('hidden');
+
+  viewer.innerHTML = `
+    <div class="head">
+      <a class="btn" href="#" aria-label="Torna">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Indice
+      </a>
+      <h2 style="margin:0 6px 0 0">${g.title}</h2>
+      <span class="pill">${g.files.length} file</span>
+      <div class="bar">
+        <button class="btn" id="qrBtn" title="Mostra QR">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3z"/><path d="M14 14h1v1h-1zM18 14h3v3h-3zM14 18h3v3h-3z"/></svg>
+          QR
+        </button>
+        <button class="btn" id="shareBtn" title="Condividi link">Condividi</button>
+      </div>
+    </div>
+
+    ${!unlocked ? `
+      <div class="pinlock">
+        <input id="pin" maxlength="8" placeholder="Inserisci PIN" inputmode="numeric" />
+        <button class="btn" id="unlockBtn">Sblocca</button>
+      </div>
+      <p class="notice">Per motivi di privacy, questa galleria è protetta da PIN.</p>
+    `: `
+      <div class="tools">
+        <a class="btn" id="dlAll">Scarica tutto (uno per uno)</a>
+        <span class="installBadge hidden" id="installHint">Suggerimento: usa “Installa” per avere l'app nella Home.</span>
+      </div>
+      <div class="media">
+        ${g.files.map(f=>`
+          <a href="${f.url}" download target="_blank" rel="noopener">
+            ${f.type==='video' ? `<video src="${f.url}" preload="metadata" controls></video>` : `<img loading="lazy" src="${f.url}" alt="${f.name}">`}
+          </a>
+        `).join('')}
+      </div>
+      <p class="notice">Nota: il download in ZIP non è disponibile qui (hosting statico). Per ZIP, carica un archivio su Drive e aggiungi il link come primo elemento.</p>
+    `}
+  `;
+
+  viewer.querySelector('a.btn').addEventListener('click', e=>{e.preventDefault();location.hash='';});
+
+  const qrBtn = $('#qrBtn');
+  qrBtn?.addEventListener('click', ()=>{
+    const url = location.href;
+    const qr = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(url)}`;
+    const w = window.open('', '_blank');
+    w.document.write(`<title>QR — ${g.title}</title><img alt="QR" src="${qr}" style="display:block;margin:20px auto;max-width:90%;height:auto"><p style="text-align:center;font-family:system-ui;color:#333">Scansiona per aprire: <br>${url}</p>`);
+  });
+
+  const shareBtn = $('#shareBtn');
+  shareBtn?.addEventListener('click', async()=>{
+    const data = {title: g.title, text: 'Galleria foto', url: location.href};
+    try{
+      if(navigator.share){await navigator.share(data)} else {await navigator.clipboard.writeText(location.href); alert('Link copiato negli appunti');}
+    }catch{}
+  });
+
+  const installHint = $('#installHint');
+  if(window.matchMedia('(display-mode: standalone)').matches===false){installHint?.classList.remove('hidden');}
+
+  $('#unlockBtn')?.addEventListener('click', ()=>{
+    const pin = $('#pin').value.trim();
+    if(pin===g.pin){sessionStorage.setItem('pin:'+id,pin); renderGallery(id);} else {alert('PIN errato');}
+  });
+
+  $('#dlAll')?.addEventListener('click', (e)=>{
+    e.preventDefault();
+    for(const f of g.files){ window.open(f.url, '_blank'); }
+  });
+}
+
+function route(){
+  const h = location.hash;
+  if(h.startsWith('#/g/')){ renderGallery(h.split('#/g/')[1]); }
+  else{ viewer.classList.add('hidden'); listEl.classList.remove('hidden'); $('#q').parentElement.classList.remove('hidden'); renderList(search.value); }
+}
+
+search.addEventListener('input', ()=>renderList(search.value));
+window.addEventListener('hashchange', route);
+renderList();
+route();
+
+/************** Install prompt handling **************/
+let deferredPrompt=null;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt=e; installBtn.disabled=false; });
+installBtn.addEventListener('click', async()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt=null; installBtn.disabled=true; });
+
+/************** Guida rapida **************/
+helpBtn.addEventListener('click', (e)=>{
+  e.preventDefault();
+  const msg = `COME USARE\n\n1) Duplica questo file e rinominalo index.html.\n2) Modifica la CONFIG (id, titolo, pin, files). Incolla link Drive pubblici.\n3) Carica su GitHub Pages: crea repo, aggiungi index.html, attiva Pages.\n4) Condividi il link e il PIN col cliente.\n5) Premi “Installa” su Android per avere l'app in Home.\n\nZIP: carica un .zip su Drive e aggiungi il link come primo file.\nSicurezza: per lavori sensibili usa cartelle Drive private e condividi per email.\n`;
+  alert(msg);
+});
+</script>
+</body>
+</html>
