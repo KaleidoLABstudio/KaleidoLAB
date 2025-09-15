@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KaleidoLAB | Client Galleries</title>
+  <meta name="description" content="Non-downloadable covers + PIN to access Google Drive folders for downloads" />
   <style>
     :root{ --bg:#0b0b0c; --card:#141417; --muted:#9aa0a6; --pri:#e1e1e6; --brand:#ff2a2a; }
     *{box-sizing:border-box}
@@ -17,7 +18,7 @@
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:18px}
     .card{background:var(--card);border:1px solid #222;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
     .thumb{aspect-ratio:4/3;background:#0f1013 center/cover no-repeat}
-    .card .ctr{padding:14px;display:flex;flex-direction:column;gap:6px}
+    .ctr{padding:14px;display:flex;flex-direction:column;gap:6px}
     .badge{font-size:.75rem;color:#cbd5e1}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:1px solid #2a2a2f;border-radius:12px;background:#18181b;cursor:pointer}
     .btn:hover{border-color:#3a3a40}
@@ -31,18 +32,21 @@
     .gallery .head{display:flex;align-items:center;gap:10px}
     .pinlock{margin-top:12px;display:flex;gap:8px}
     .pinlock input{width:160px;background:#111;border:1px solid #222;border-radius:10px;color:#fff;padding:10px;letter-spacing:4px;text-align:center}
-    .media{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}
-    .media a{display:block;border:1px solid #222;border-radius:14px;overflow:hidden}
-    .media img{width:100%;height:auto;display:block}
+    .media{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:16px}
+    .frameWrap{border:1px solid #222;border-radius:14px;overflow:hidden;background:#0f1013}
+    iframe{width:100%;height:72vh;border:0;display:block;background:#0f1013}
+    /* Make cover hard to save */
+    .coverBox{aspect-ratio:4/3;background:#0f1013 center/cover no-repeat;border-radius:14px}
+    .no-save{pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
   </style>
 </head>
-<body>
+<body oncontextmenu="return false">
   <div class="wrap">
     <header>
       <div class="logo"></div>
       <div>
         <div class="title">KaleidoLAB — Client Galleries</div>
-        <div class="sub">Installable PWA to deliver photos</div>
+        <div class="sub">Non‑downloadable covers. After PIN, open/download from Google Drive folders.</div>
       </div>
     </header>
 
@@ -52,17 +56,27 @@
     </div>
 
     <div id="list" class="grid"></div>
-
     <section id="viewer" class="gallery hidden"></section>
 
     <div class="footer">© KaleidoLAB — Free app to share client photos</div>
   </div>
 
 <script>
+// === CONFIG ===
+// Local cover images (NOT downloadable): repo root
+//   - ./2025-09-15-12-09-42-content.jpg   (portrait cover)
+//   - ./2025-09-15-12-09-33-content.jpg   (negative cover)
+//   - ./2025-09-15-12-09-37-content.jpg   (cyanotype cover)
+//   - ./logo.png.jpg                       (logo)
+// Google Drive folders (clients download directly from Drive after PIN):
+//   - Retrato:    13OfwEZSTv10VsHmKcCzUo5riP2QDJp7N
+//   - Galería:    1mWUp9G0oES0mInz0qFHDU2lH14qiNFLP
+//   - Cianotipia: 1LuLRJk7DiK6ofhSvtzFIYZI-uORL9uec
+
 const GALLERIES = [
-  { id:'retrato', title:'Portrait (last photo)', cover:'./2025-09-15-12-09-42-content.jpg', pin:'2024', files:[{type:'image', url:'./2025-09-15-12-09-42-content.jpg', name:'Portrait.jpg'}]},
-  { id:'negativo', title:'Gallery (negative photo)', cover:'./2025-09-15-12-09-33-content.jpg', pin:'1357', files:[{type:'image', url:'./2025-09-15-12-09-33-content.jpg', name:'Negative.jpg'}]},
-  { id:'cianotipia', title:'Cyanotype (the resulting photo)', cover:'./2025-09-15-12-09-37-content.jpg', pin:'2468', files:[{type:'image', url:'./2025-09-15-12-09-37-content.jpg', name:'Cyanotype.jpg'}]}
+  { id:'retrato',  title:'Portrait (last photo)',             cover:'./2025-09-15-12-09-42-content.jpg', pin:'2024', driveFolderId:'13OfwEZSTv10VsHmKcCzUo5riP2QDJp7N' },
+  { id:'negativo', title:'Gallery (negative photo)',           cover:'./2025-09-15-12-09-33-content.jpg', pin:'1357', driveFolderId:'1mWUp9G0oES0mInz0qFHDU2lH14qiNFLP' },
+  { id:'cianotipia',title:'Cyanotype (the resulting photo)',   cover:'./2025-09-15-12-09-37-content.jpg', pin:'2468', driveFolderId:'1LuLRJk7DiK6ofhSvtzFIYZI-uORL9uec' }
 ];
 
 const listEl=document.getElementById('list');
@@ -70,11 +84,24 @@ const viewer=document.getElementById('viewer');
 const search=document.getElementById('q');
 const count=document.getElementById('count');
 
+document.addEventListener('dragstart', e=>e.preventDefault());
+
 function renderList(filter=''){
   const q=filter.trim().toLowerCase();
   const items=GALLERIES.filter(g=>g.title.toLowerCase().includes(q));
   count.textContent= items.length+' galleries';
-  listEl.innerHTML= items.map(g=>`<article class="card"><a href="#/g/${g.id}"><div class="thumb" style="background-image:url('${g.cover}')"></div></a><div class="ctr"><div class="row"><strong>${g.title}</strong><span class="badge">PIN</span></div><a class="btn" href="#/g/${g.id}">Open</a></div></article>`).join('');
+  listEl.innerHTML= items.map(g=>`
+    <article class="card">
+      <div class="thumb" style="background-image:url('${g.cover}')"></div>
+      <div class="ctr">
+        <div class="row">
+          <strong>${g.title}</strong>
+          <span class="badge">PIN</span>
+        </div>
+        <a class="btn" href="#/g/${g.id}">Open</a>
+      </div>
+    </article>
+  `).join('');
 }
 
 function renderGallery(id){
@@ -85,7 +112,36 @@ function renderGallery(id){
   viewer.classList.remove('hidden');
   listEl.classList.add('hidden');
   search.parentElement.classList.add('hidden');
-  viewer.innerHTML = `<div class="head"><a class="btn" href="#">Back</a><h2>${g.title}</h2><span class="pill">${g.files.length} files</span></div>${!unlocked?`<div class="pinlock"><input id="pin" maxlength="8" placeholder="PIN" inputmode="numeric" /><button class="btn" id="unlockBtn">Unlock</button></div><p>Enter the PIN to view this gallery.</p>`:`<div class="media">${g.files.map(f=>`<a href="${f.url}" download><img src="${f.url}" alt="${g.title}"></a>`).join('')}</div>`}`;
+
+  const driveOpenUrl = `https://drive.google.com/drive/folders/${g.driveFolderId}?usp=sharing`;
+  const driveEmbedUrl = `https://drive.google.com/embeddedfolderview?id=${g.driveFolderId}#grid`;
+
+  viewer.innerHTML = `
+    <div class="head" style="display:flex;align-items:center;gap:10px">
+      <a class="btn" href="#">Back</a>
+      <h2 style="margin:0">${g.title}</h2>
+      <span class="pill">Cover (non‑downloadable)</span>
+    </div>
+    <div class="media">
+      <div class="coverBox no-save" style="background-image:url('${g.cover}')"></div>
+    </div>
+    ${!unlocked ? `
+      <div class="pinlock">
+        <input id="pin" maxlength="8" placeholder="PIN" inputmode="numeric" />
+        <button class="btn" id="unlockBtn">Unlock</button>
+      </div>
+      <p class="sub">Enter the PIN to access the Google Drive folder and download the photos. Make sure the Drive folder sharing is set to “Anyone with the link: Viewer”.</p>
+    ` : `
+      <div class="media" style="margin-top:8px">
+        <a class="btn" href="${driveOpenUrl}" target="_blank" rel="noopener">Open in Google Drive</a>
+      </div>
+      <div class="frameWrap" style="margin-top:8px">
+        <iframe src="${driveEmbedUrl}" title="${g.title} — Google Drive"></iframe>
+      </div>
+      <p class="sub" style="color:#9aa0a6">If the folder view looks empty, set the Drive folder to “Anyone with the link: Viewer”, then refresh.</p>
+    `}
+  `;
+
   viewer.querySelector('a.btn').addEventListener('click', e=>{e.preventDefault();location.hash='';});
   document.getElementById('unlockBtn')?.addEventListener('click', ()=>{
     const pin=document.getElementById('pin').value.trim();
@@ -95,7 +151,8 @@ function renderGallery(id){
 
 function route(){
   const h=location.hash;
-  if(h.startsWith('#/g/')){ renderGallery(h.split('#/g/')[1]); } else { viewer.classList.add('hidden'); listEl.classList.remove('hidden'); search.parentElement.classList.remove('hidden'); renderList(search.value); }
+  if(h.startsWith('#/g/')){ renderGallery(h.split('#/g/')[1]); }
+  else { viewer.classList.add('hidden'); listEl.classList.remove('hidden'); search.parentElement.classList.remove('hidden'); renderList(search.value); }
 }
 
 search.addEventListener('input', ()=>renderList(search.value));
