@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KaleidoLAB | Galerías Clientes</title>
-  <!-- Idiomas: ES (por defecto), IT, EN, CA. Selector arriba a la derecha (se guarda en localStorage). -->
+  <title>KaleidoLAB | Client Galleries</title>
   <style>
     :root{ --bg:#0b0b0c; --card:#141417; --muted:#9aa0a6; --pri:#e1e1e6; --brand:#ff2a2a; }
     *{box-sizing:border-box}
@@ -12,7 +11,7 @@
     a{color:inherit;text-decoration:none}
     .wrap{max-width:980px;margin:0 auto;padding:20px}
     header{display:flex;align-items:center;gap:12px}
-    .logo{width:44px;height:44px;border-radius:10px;background:#000 url('./assets/logo.png.jpg') center/contain no-repeat;border:1px solid #222}
+    .logo{width:44px;height:44px;border-radius:10px;background:#000 url('./logo.png.jpg') center/contain no-repeat;border:1px solid #222}
     .title{font-weight:800;letter-spacing:.3px}
     .sub{color:var(--muted);font-size:.95rem}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:18px}
@@ -27,47 +26,28 @@
     .search input{flex:1;background:#121216;border:1px solid #23232a;border-radius:12px;color:#fff;padding:12px}
     .pill{padding:6px 10px;background:#121216;border:1px solid #222;border-radius:999px;color:#cbd5e1;font-size:.8rem}
     .footer{margin:24px 0;color:#838b95;font-size:.9rem}
-    .bar{display:flex;gap:8px;align-items:center;margin-left:auto}
-    .icon{width:20px;height:20px}
     .hidden{display:none}
-    select.lang{background:#121216;border:1px solid #23232a;border-radius:12px;color:#fff;padding:10px}
     .gallery{margin-top:18px}
     .gallery .head{display:flex;align-items:center;gap:10px}
     .pinlock{margin-top:12px;display:flex;gap:8px}
     .pinlock input{width:160px;background:#111;border:1px solid #222;border-radius:10px;color:#fff;padding:10px;letter-spacing:4px;text-align:center}
     .media{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}
     .media a{display:block;border:1px solid #222;border-radius:14px;overflow:hidden}
-    .media img, .media video{width:100%;height:auto;display:block}
-    .tools{display:flex;gap:8px;margin-top:8px}
-    .notice{margin:10px 0;color:#95a0ab}
-    .installBadge{border:1px dashed #2a2; padding:6px 10px;border-radius:8px}
+    .media img{width:100%;height:auto;display:block}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="logo" aria-hidden="true"></div>
+      <div class="logo"></div>
       <div>
-        <div class="title" data-i="title">KaleidoLAB — Galerías Clientes</div>
-        <div class="sub" data-i="subtitle">App instalable (PWA) para descargar fotos</div>
-      </div>
-      <div class="bar">
-        <select class="lang" id="langSel" title="Idioma">
-          <option value="es">ES</option>
-          <option value="it">IT</option>
-          <option value="en">EN</option>
-          <option value="ca">CA</option>
-        </select>
-        <button class="btn" id="installBtn" title="Instalar app" disabled>
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M19 21H5"/></svg>
-          <span data-i="install">Instalar</span>
-        </button>
-        <a class="btn" href="#" id="helpBtn" title="Guía"><span data-i="help">Guía</span></a>
+        <div class="title">KaleidoLAB — Client Galleries</div>
+        <div class="sub">Installable PWA to deliver photos</div>
       </div>
     </header>
 
     <div class="search">
-      <input id="q" placeholder="Buscar cliente o evento…" />
+      <input id="q" placeholder="Search…" />
       <span class="pill" id="count">0</span>
     </div>
 
@@ -75,79 +55,53 @@
 
     <section id="viewer" class="gallery hidden"></section>
 
-    <div class="footer" data-i="foot">© KaleidoLAB — App gratuita. Crea un QR para cada galería y compártelo.</div>
+    <div class="footer">© KaleidoLAB — Free app to share client photos</div>
   </div>
 
 <script>
-const I18N = {
-  es:{title:'KaleidoLAB — Galerías Clientes', subtitle:'App instalable (PWA) para descargar fotos', install:'Instalar', help:'Guía', searchPH:'Buscar cliente o evento…', gallery:'Galería', open:'Abrir galería', files:'archivo(s)', pin:'PIN', pinNotice:'Por privacidad, esta galería está protegida con PIN.', unlock:'Desbloquear', back:'Índice', share:'Compartir', qr:'QR', dlAll:'Descargar todo (uno por uno)', zipNote:'Nota: para ZIP, sube un archivo .zip a Drive y añade el enlace como primer elemento.', foot:'© KaleidoLAB — App gratuita. Crea un QR para cada galería y compártelo.'},
-  it:{title:'KaleidoLAB — Gallerie Clienti', subtitle:'App installabile (PWA) per scaricare le foto', install:'Installa', help:'Guida', searchPH:'Cerca cliente o evento…', gallery:'Galleria', open:'Apri galleria', files:'file', pin:'PIN', pinNotice:'Per privacy, questa galleria è protetta da PIN.', unlock:'Sblocca', back:'Indice', share:'Condividi', qr:'QR', dlAll:'Scarica tutto (uno per uno)', zipNote:'Nota: per ZIP carica un archivio su Drive e aggiungi il link come primo elemento.', foot:'© KaleidoLAB — App gratuita. Genera un QR per ogni galleria.'},
-  en:{title:'KaleidoLAB — Client Galleries', subtitle:'Installable PWA to deliver photos', install:'Install', help:'Help', searchPH:'Search client or event…', gallery:'Gallery', open:'Open gallery', files:'file(s)', pin:'PIN', pinNotice:'For privacy, this gallery is PIN-protected.', unlock:'Unlock', back:'Index', share:'Share', qr:'QR', dlAll:'Download all (one by one)', zipNote:'Note: for ZIP upload a .zip to Drive and add the link as first item.', foot:'© KaleidoLAB — Free app. Generate a QR for each gallery.'},
-  ca:{title:'KaleidoLAB — Galeries de clients', subtitle:'Aplicació instal·lable (PWA) per descarregar fotos', install:'Instal·la', help:'Guia', searchPH:'Cerca client o esdeveniment…', gallery:'Galeria', open:'Obre galeria', files:'fitxer(s)', pin:'PIN', pinNotice:'Per privadesa, aquesta galeria està protegida amb PIN.', unlock:'Desbloca', back:'Índex', share:'Comparteix', qr:'QR', dlAll:'Descarrega-ho tot (d\'un en un)', zipNote:'Nota: per a ZIP puja un .zip a Drive i afegeix l\'enllaç com a primer element.', foot:'© KaleidoLAB — App gratuïta. Genera un QR per a cada galeria.'}
-};
-let LANG = localStorage.getItem('klb:lang') || 'es';
-function applyLang(){ const L = I18N[LANG] || I18N.es; document.documentElement.lang = LANG; document.querySelector('[data-i="title"]').textContent = L.title; document.querySelector('[data-i="subtitle"]').textContent = L.subtitle; document.querySelector('#helpBtn span').textContent = L.help; document.querySelector('#installBtn span')?.textContent = L.install; document.getElementById('q').placeholder = L.searchPH; document.querySelector('[data-i="foot"]').textContent = L.foot; }
-
-/* GALLERIES usando tus nombres de archivo exactos */
 const GALLERIES = [
-  { id:'retrato', title:{es:'Retrato (última foto)', it:'Ritratto (ultima foto)', en:'Portrait (last photo)', ca:'Retrat (última foto)'}, cover:'./media/2025-09-15-12-09-42-content.jpg', pin:'2024', files:[{type:'image', url:'./media/2025-09-15-12-09-42-content.jpg', name:'Retrato_01.jpg'}]},
-  { id:'galeria_negativo', title:{es:'Galería (foto en negativo)', it:'Galleria (foto in negativo)', en:'Gallery (negative photo)', ca:'Galeria (foto en negatiu)'}, cover:'./media/2025-09-15-12-09-33-content.jpg', pin:'1357', files:[{type:'image', url:'./media/2025-09-15-12-09-33-content.jpg', name:'Negativo_01.jpg'}]},
-  { id:'cianotipia', title:{es:'Cianotipia (la foto que queda)', it:'Cianotipia (la foto che rimane)', en:'Cyanotype (the resulting photo)', ca:'Cianotípia (la foto resultant)'}, cover:'./media/2025-09-15-12-09-37-content.jpg', pin:'2468', files:[{type:'image', url:'./media/2025-09-15-12-09-37-content.jpg', name:'Cianotipia_01.jpg'}]}
+  { id:'retrato', title:'Portrait (last photo)', cover:'./2025-09-15-12-09-42-content.jpg', pin:'2024', files:[{type:'image', url:'./2025-09-15-12-09-42-content.jpg', name:'Portrait.jpg'}]},
+  { id:'negativo', title:'Gallery (negative photo)', cover:'./2025-09-15-12-09-33-content.jpg', pin:'1357', files:[{type:'image', url:'./2025-09-15-12-09-33-content.jpg', name:'Negative.jpg'}]},
+  { id:'cianotipia', title:'Cyanotype (the resulting photo)', cover:'./2025-09-15-12-09-37-content.jpg', pin:'2468', files:[{type:'image', url:'./2025-09-15-12-09-37-content.jpg', name:'Cyanotype.jpg'}]}
 ];
 
-/* PWA */
-(async function setupPWA(){
-  const manifest = { name:'KaleidoLAB — Galerías', short_name:'KaleidoLAB', start_url:'.', display:'standalone', background_color:'#0b0b0c', theme_color:'#ff2a2a', icons:[{src:'./assets/logo.png.jpg', sizes:'256x256', type:'image/jpeg'}] };
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-  const url = URL.createObjectURL(blob); const link = document.createElement('link'); link.rel='manifest'; link.href=url; document.head.appendChild(link);
-  const swCode = `self.addEventListener('install', e=>{self.skipWaiting();e.waitUntil(caches.open('klb-v1').then(c=>c.addAll(['./'])))});self.addEventListener('activate', e=>self.clients.claim());self.addEventListener('fetch', e=>{e.respondWith((async()=>{try{const r=await fetch(e.request);const c=await caches.open('klb-v1');c.put(e.request,r.clone());return r}catch(err){return caches.match(e.request)}})())});`;
-  const swBlob = new Blob([swCode], {type:'text/javascript'}); const swUrl = URL.createObjectURL(swBlob); if('serviceWorker' in navigator){ try{await navigator.serviceWorker.register(swUrl);}catch(err){console.warn('SW fail',err)} }
-})();
+const listEl=document.getElementById('list');
+const viewer=document.getElementById('viewer');
+const search=document.getElementById('q');
+const count=document.getElementById('count');
 
-/* UI */
-const $ = s=>document.querySelector(s); const listEl=$('#list'); const viewer=$('#viewer'); const search=$('#q'); const count=$('#count'); const helpBtn=$('#helpBtn'); const langSel=document.getElementById('langSel'); langSel.value=LANG; langSel.addEventListener('change',()=>{ LANG=langSel.value; localStorage.setItem('klb:lang',LANG); applyLang(); renderList(search.value); if(location.hash.startsWith('#/g/')) renderGallery(location.hash.split('#/g/')[1]); }); applyLang();
-function t(obj){ return typeof obj==='string'?obj:(obj[LANG]||obj.es||Object.values(obj)[0]); }
-function renderList(filter=''){ const L=I18N[LANG]; const q=filter.trim().toLowerCase(); const items=GALLERIES.filter(g=>t(g.title).toLowerCase().includes(q)||g.id.toLowerCase().includes(q)); count.textContent= items.length+' '+(LANG==='es'?'galería(s)': LANG==='it'?'galleria/e': LANG==='en'?'gallery/ies':'galeria/es'); listEl.innerHTML= items.map(g=>`<article class="card"><a href="#/g/${g.id}"><div class="thumb" style="background-image:url('${g.cover}')"></div></a><div class="ctr"><div class="row"><strong>${t(g.title)}</strong><span class="badge">${L.pin}</span></div><a class="btn" href="#/g/${g.id}" aria-label="${L.open}">${L.open}</a></div></article>`).join(''); }
-function renderGallery(id){ const L=I18N[LANG]; const g=GALLERIES.find(x=>x.id===id); if(!g){location.hash='';return} const stored=sessionStorage.getItem('pin:'+id)||''; const unlocked=stored===g.pin; viewer.classList.remove('hidden'); listEl.classList.add('hidden'); $('#q').parentElement.classList.add('hidden'); viewer.innerHTML = `<div class="head"><a class="btn" href="#" aria-label="${L.back}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>${L.back}</a><h2 style="margin:0 6px 0 0">${t(g.title)}</h2><span class="pill">${g.files.length} ${L.files}</span><div class="bar"><button class="btn" id="qrBtn" title="QR">${L.qr}</button><button class="btn" id="shareBtn" title="${L.share}">${L.share}</button></div></div>${!unlocked?`<div class="pinlock"><input id="pin" maxlength="8" placeholder="${L.pin}" inputmode="numeric" /><button class="btn" id="unlockBtn">${L.unlock}</button></div><p class="notice">${L.pinNotice}</p>`:`<div class="tools"><a class="btn" id="dlAll">${L.dlAll}</a><span class="installBadge hidden" id="installHint">PWA</span></div><div class="media">${g.files.map(f=>`<a href="${f.url}" download target="_blank" rel="noopener">${f.type==='video'?`<video src="${f.url}" preload="metadata" controls></video>`:`<img loading="lazy" src="${f.url}" alt="${t(g.title)}">`}</a>`).join('')}</div><p class="notice">${L.zipNote}</p>`}`; viewer.querySelector('a.btn').addEventListener('click', e=>{e.preventDefault();location.hash='';}); const qrBtn=$('#qrBtn'); qrBtn?.addEventListener('click', ()=>{ const url=location.href; const qr=`https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(url)}`; const w=window.open('','_blank'); w.document.write(`<title>QR — ${t(g.title)}</title><img alt="QR" src="${qr}" style="display:block;margin:20px auto;max-width:90%;height:auto"><p style="text-align:center;font-family:system-ui;color:#333">${url}</p>`); }); const shareBtn=$('#shareBtn'); shareBtn?.addEventListener('click', async()=>{ const data={title:t(g.title), text:'KaleidoLAB', url:location.href}; try{ if(navigator.share){await navigator.share(data)} else {await navigator.clipboard.writeText(location.href); alert('Link copiado');} }catch{} }); const installHint=$('#installHint'); if(window.matchMedia('(display-mode: standalone)').matches===false){installHint?.classList.remove('hidden');} $('#unlockBtn')?.addEventListener('click', ()=>{ const pin=$('#pin').value.trim(); if(pin===g.pin){sessionStorage.setItem('pin:'+id,pin); renderGallery(id);} else {alert('PIN incorrecto');} }); $('#dlAll')?.addEventListener('click',(e)=>{ e.preventDefault(); for(const f of g.files){ window.open(f.url,'_blank'); } }); }
-function route(){ const h=location.hash; if(h.startsWith('#/g/')){ renderGallery(h.split('#/g/')[1]); } else { viewer.classList.add('hidden'); listEl.classList.remove('hidden'); $('#q').parentElement.classList.remove('hidden'); renderList(search.value); } }
-search.addEventListener('input', ()=>renderList(search.value)); window.addEventListener('hashchange', route); renderList(); route();
-let deferredPrompt=null; const installBtn=document.getElementById('installBtn'); window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; installBtn.disabled=false; }); installBtn.addEventListener('click', async()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt=null; installBtn.disabled=true; });
-helpBtn.addEventListener('click',(e)=>{ e.preventDefault(); const L=I18N[LANG]; const msg = (LANG==='es')? `CÓMO USAR
+function renderList(filter=''){
+  const q=filter.trim().toLowerCase();
+  const items=GALLERIES.filter(g=>g.title.toLowerCase().includes(q));
+  count.textContent= items.length+' galleries';
+  listEl.innerHTML= items.map(g=>`<article class="card"><a href="#/g/${g.id}"><div class="thumb" style="background-image:url('${g.cover}')"></div></a><div class="ctr"><div class="row"><strong>${g.title}</strong><span class="badge">PIN</span></div><a class="btn" href="#/g/${g.id}">Open</a></div></article>`).join('');
+}
 
-1) Sube los archivos exactamente con estos nombres y carpetas:
-   - assets/logo.png.jpg
-   - media/2025-09-15-12-09-42-content.jpg (Retrato)
-   - media/2025-09-15-12-09-37-content.jpg (Cianotipia)
-   - media/2025-09-15-12-09-33-content.jpg (Negativo)
-2) Haz commit y espera unos segundos.
-3) Comparte el enlace y el PIN.`
-: (LANG==='it')? `COME USARE
+function renderGallery(id){
+  const g=GALLERIES.find(x=>x.id===id);
+  if(!g){location.hash='';return}
+  const stored=sessionStorage.getItem('pin:'+id)||'';
+  const unlocked=stored===g.pin;
+  viewer.classList.remove('hidden');
+  listEl.classList.add('hidden');
+  search.parentElement.classList.add('hidden');
+  viewer.innerHTML = `<div class="head"><a class="btn" href="#">Back</a><h2>${g.title}</h2><span class="pill">${g.files.length} files</span></div>${!unlocked?`<div class="pinlock"><input id="pin" maxlength="8" placeholder="PIN" inputmode="numeric" /><button class="btn" id="unlockBtn">Unlock</button></div><p>Enter the PIN to view this gallery.</p>`:`<div class="media">${g.files.map(f=>`<a href="${f.url}" download><img src="${f.url}" alt="${g.title}"></a>`).join('')}</div>`}`;
+  viewer.querySelector('a.btn').addEventListener('click', e=>{e.preventDefault();location.hash='';});
+  document.getElementById('unlockBtn')?.addEventListener('click', ()=>{
+    const pin=document.getElementById('pin').value.trim();
+    if(pin===g.pin){sessionStorage.setItem('pin:'+id,pin); renderGallery(id);} else {alert('Incorrect PIN');}
+  });
+}
 
-1) Carica i file esattamente con questi nomi e cartelle:
-   - assets/logo.png.jpg
-   - media/2025-09-15-12-09-42-content.jpg (Ritratto)
-   - media/2025-09-15-12-09-37-content.jpg (Cianotipia)
-   - media/2025-09-15-12-09-33-content.jpg (Negativo)
-2) Fai il commit e attendi pochi secondi.
-3) Condividi link e PIN.`
-: (LANG==='en')? `HOW TO USE
+function route(){
+  const h=location.hash;
+  if(h.startsWith('#/g/')){ renderGallery(h.split('#/g/')[1]); } else { viewer.classList.add('hidden'); listEl.classList.remove('hidden'); search.parentElement.classList.remove('hidden'); renderList(search.value); }
+}
 
-1) Upload the files with these exact names & folders:
-   - assets/logo.png.jpg
-   - media/2025-09-15-12-09-42-content.jpg (Portrait)
-   - media/2025-09-15-12-09-37-content.jpg (Cyanotype)
-   - media/2025-09-15-12-09-33-content.jpg (Negative)
-2) Commit and wait a few seconds.
-3) Share the link and PIN.`
-: `COM UTILITZAR
-
-1) Pugeu els fitxers amb aquests noms i carpetes:
-   - assets/logo.png.jpg
-   - media/2025-09-15-12-09-42-content.jpg (Retrat)
-   - media/2025-09-15-12-09-37-content.jpg (Cianotípia)
-   - media/2025-09-15-12-09-33-content.jpg (Negatiu)
-2) Feu el commit i espereu uns segons.
-3) Compartiu l'enllaç i el PIN.`; alert(msg); });
+search.addEventListener('input', ()=>renderList(search.value));
+window.addEventListener('hashchange', route);
+renderList();
+route();
 </script>
 </body>
 </html>
