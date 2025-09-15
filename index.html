@@ -7,17 +7,17 @@
   <style>
     :root{ --bg:#0b0b0c; --card:#141417; --muted:#9aa0a6; --pri:#e1e1e6; --brand:#ff2a2a; }
     *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--pri);font:16px/1.5 system-ui}
+    html,body{margin:0;background:var(--bg);color:var(--pri);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
     a{color:inherit;text-decoration:none}
     .wrap{max-width:980px;margin:0 auto;padding:20px}
     header{display:flex;align-items:center;gap:12px}
     .logo{width:44px;height:44px;border-radius:10px;background:#000 url('./logo.png.jpg') center/contain no-repeat;border:1px solid #222}
-    .title{font-weight:800}
+    .title{font-weight:800;letter-spacing:.3px}
     .sub{color:var(--muted);font-size:.95rem}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:18px}
     .card{background:var(--card);border:1px solid #222;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
     .thumb{aspect-ratio:4/3;background:#0f1013 center/cover no-repeat}
-    .ctr{padding:14px;display:flex;flex-direction:column;gap:6px}
+    .card .ctr{padding:14px;display:flex;flex-direction:column;gap:6px}
     .badge{font-size:.75rem;color:#cbd5e1}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:1px solid #2a2a2f;border-radius:12px;background:#18181b;cursor:pointer}
     .btn:hover{border-color:#3a3a40}
@@ -52,6 +52,7 @@
     </div>
 
     <div id="list" class="grid"></div>
+
     <section id="viewer" class="gallery hidden"></section>
 
     <div class="footer">© KaleidoLAB — Free app to share client photos</div>
@@ -59,39 +60,9 @@
 
 <script>
 const GALLERIES = [
-  {
-    id:'retrato',
-    title:'Portrait (last photo)',
-    cover:'https://drive.google.com/uc?id=ID_FOTO_RETRATO_1',
-    pin:'2024',
-    files:[
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_RETRATO_1'},
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_RETRATO_2'},
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_RETRATO_3'}
-    ]
-  },
-  {
-    id:'negativo',
-    title:'Gallery (negative photo)',
-    cover:'https://drive.google.com/uc?id=ID_FOTO_NEGATIVO_1',
-    pin:'1357',
-    files:[
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_NEGATIVO_1'},
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_NEGATIVO_2'},
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_NEGATIVO_3'}
-    ]
-  },
-  {
-    id:'cianotipia',
-    title:'Cyanotype (the resulting photo)',
-    cover:'https://drive.google.com/uc?id=ID_FOTO_CIANO_1',
-    pin:'2468',
-    files:[
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_CIANO_1'},
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_CIANO_2'},
-      {type:'image', url:'https://drive.google.com/uc?id=ID_FOTO_CIANO_3'}
-    ]
-  }
+  { id:'retrato', title:'Portrait (last photo)', cover:'./2025-09-15-12-09-42-content.jpg', pin:'2024', files:[{type:'image', url:'./2025-09-15-12-09-42-content.jpg', name:'Portrait.jpg'}]},
+  { id:'negativo', title:'Gallery (negative photo)', cover:'./2025-09-15-12-09-33-content.jpg', pin:'1357', files:[{type:'image', url:'./2025-09-15-12-09-33-content.jpg', name:'Negative.jpg'}]},
+  { id:'cianotipia', title:'Cyanotype (the resulting photo)', cover:'./2025-09-15-12-09-37-content.jpg', pin:'2468', files:[{type:'image', url:'./2025-09-15-12-09-37-content.jpg', name:'Cyanotype.jpg'}]}
 ];
 
 const listEl=document.getElementById('list');
@@ -114,5 +85,23 @@ function renderGallery(id){
   viewer.classList.remove('hidden');
   listEl.classList.add('hidden');
   search.parentElement.classList.add('hidden');
-  viewer.innerHTML = `<div class="head"><a
-  
+  viewer.innerHTML = `<div class="head"><a class="btn" href="#">Back</a><h2>${g.title}</h2><span class="pill">${g.files.length} files</span></div>${!unlocked?`<div class="pinlock"><input id="pin" maxlength="8" placeholder="PIN" inputmode="numeric" /><button class="btn" id="unlockBtn">Unlock</button></div><p>Enter the PIN to view this gallery.</p>`:`<div class="media">${g.files.map(f=>`<a href="${f.url}" download><img src="${f.url}" alt="${g.title}"></a>`).join('')}</div>`}`;
+  viewer.querySelector('a.btn').addEventListener('click', e=>{e.preventDefault();location.hash='';});
+  document.getElementById('unlockBtn')?.addEventListener('click', ()=>{
+    const pin=document.getElementById('pin').value.trim();
+    if(pin===g.pin){sessionStorage.setItem('pin:'+id,pin); renderGallery(id);} else {alert('Incorrect PIN');}
+  });
+}
+
+function route(){
+  const h=location.hash;
+  if(h.startsWith('#/g/')){ renderGallery(h.split('#/g/')[1]); } else { viewer.classList.add('hidden'); listEl.classList.remove('hidden'); search.parentElement.classList.remove('hidden'); renderList(search.value); }
+}
+
+search.addEventListener('input', ()=>renderList(search.value));
+window.addEventListener('hashchange', route);
+renderList();
+route();
+</script>
+</body>
+</html>
